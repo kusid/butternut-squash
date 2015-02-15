@@ -11,8 +11,16 @@
 
     <groupId>com.kusid.butternut</groupId>
     <artifactId>butternut-squash</artifactId>
-    <version>0.1.0</version>
+    <version>0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
+
+    <developers>
+        <developer>
+            <name>kusid</name>
+            <email>ravenblizzard@gmail.com</email>
+            <timezone>EST</timezone>
+        </developer>
+    </developers>
 
     <properties>
         <java.version>1.8</java.version>

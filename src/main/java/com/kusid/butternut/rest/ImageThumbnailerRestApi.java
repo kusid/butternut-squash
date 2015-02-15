@@ -18,12 +18,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
- * A helper class that contains the necessary Consumers for handling HTTP requests.
+ * Contains the necessary Consumers for handling HTTP requests.
  */
 public class ImageThumbnailerRestApi {
-
-    public static final String IMG_THUMBNAIL_URI = "/image/thumbnail.jpg";
-    public static final String THUMBNAIL_REQ_URI = "/thumbnail";
 
     /**
      * Accept an image upload via POST and notify a Reactor that the image needs to be thumbnailed. Asynchronously respond
@@ -38,15 +35,18 @@ public class ImageThumbnailerRestApi {
                                                            AtomicReference<Path> thumbnail,
                                                            Reactor reactor) {
         return req -> {
+
+            ImageThumbnailersRestApiHelper restApiHelper = ImageThumbnailersRestApiHelper.getInstance();
+
             if (req.getMethod() != HttpMethod.POST) {
-                channel.send(badRequest(req.getMethod() + " not supported for this URI"));
+                channel.send(restApiHelper.badRequest(req.getMethod() + " not supported for this URI"));
                 return;
             }
 
             // write to a temp file
             Path imgIn = null;
             try {
-                imgIn = readUpload(req.content());
+                imgIn = restApiHelper.readUpload(req.content());
             } catch (IOException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -54,7 +54,7 @@ public class ImageThumbnailerRestApi {
             // Asynchronously thumbnail the image to 250px on the long side
             reactor.sendAndReceive("thumbnail", Event.wrap(imgIn), ev -> {
                 thumbnail.set(ev.getData());
-                channel.send(redirect());
+                channel.send(restApiHelper.redirect());
             });
         };
     }
@@ -70,11 +70,13 @@ public class ImageThumbnailerRestApi {
     public static Consumer<FullHttpRequest> serveThumbnailImage(NetChannel<FullHttpRequest, FullHttpResponse> channel,
                                                                 AtomicReference<Path> thumbnail) {
         return req -> {
+            ImageThumbnailersRestApiHelper restApiHelper = ImageThumbnailersRestApiHelper.getInstance();
+
             if (req.getMethod() != HttpMethod.GET) {
-                channel.send(badRequest(req.getMethod() + " not supported for this URI"));
+                channel.send(restApiHelper.badRequest(req.getMethod() + " not supported for this URI"));
             } else {
                 try {
-                    channel.send(serveImage(thumbnail.get()));
+                    channel.send(restApiHelper.serveImage(thumbnail.get()));
                 } catch (IOException e) {
                     throw new IllegalStateException(e.getMessage(), e);
                 }
@@ -97,60 +99,6 @@ public class ImageThumbnailerRestApi {
             resp.headers().set(HttpHeaders.Names.CONTENT_LENGTH, resp.content().readableBytes());
             channel.send(resp);
         };
-    }
-
-  /*
-   * Read POST uploads and write them to a temp file, returning the Path to that file.
-   */
-    private static Path readUpload(ByteBuf content) throws IOException {
-        byte[] bytes = new byte[content.readableBytes()];
-        content.readBytes(bytes);
-        content.release();
-
-        // write to a temp file
-        Path imgIn = Files.createTempFile("upload", ".jpg");
-        Files.write(imgIn, bytes);
-
-        imgIn.toFile().deleteOnExit();
-
-        return imgIn;
-    }
-
-    /*
-     * Create an HTTP 400 bad request response.
-     */
-    public static FullHttpResponse badRequest(String msg) {
-        DefaultFullHttpResponse resp = new DefaultFullHttpResponse(HTTP_1_1, BAD_REQUEST);
-        resp.content().writeBytes(msg.getBytes());
-        resp.headers().set(CONTENT_TYPE, "text/plain");
-        resp.headers().set(CONTENT_LENGTH, resp.content().readableBytes());
-        return resp;
-    }
-
-    /*
-     * Create an HTTP 301 redirect response.
-     */
-    public static FullHttpResponse redirect() {
-        DefaultFullHttpResponse resp = new DefaultFullHttpResponse(HTTP_1_1, MOVED_PERMANENTLY);
-        resp.headers().set(CONTENT_LENGTH, 0);
-        resp.headers().set(LOCATION, IMG_THUMBNAIL_URI);
-        return resp;
-    }
-
-    /*
-     * Create an HTTP 200 response that contains the data of the thumbnailed image.
-     */
-    public static FullHttpResponse serveImage(Path path) throws IOException {
-        DefaultFullHttpResponse resp = new DefaultFullHttpResponse(HTTP_1_1, OK);
-
-        RandomAccessFile f = new RandomAccessFile(path.toString(), "r");
-        resp.headers().set(CONTENT_TYPE, "image/jpeg");
-        resp.headers().set(CONTENT_LENGTH, f.length());
-
-        byte[] bytes = Files.readAllBytes(path);
-        resp.content().writeBytes(bytes);
-
-        return resp;
     }
 
 }

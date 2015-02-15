@@ -5,5 +5,6 @@ package com.kusid.butternut.constants;
  *
  */
 public interface CommonConstants {
-
+    String IMG_THUMBNAIL_URI = "/image/thumbnail.jpg";
+    String THUMBNAIL_REQ_URI = "/thumbnail";
 }
