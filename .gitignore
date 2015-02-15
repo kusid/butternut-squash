@@ -1,3 +1,10 @@
+# Java common ignores
+target
+
+# Intellij ignores
+.idea
+butternut-squash.iml
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
