@@ -1,5 +1,6 @@
 package com.kusid.butternut.reactor;
 
+import com.kusid.butternut.constants.CommonConstants;
 import com.kusid.butternut.image.thumbnailer.ImageThumbnailer;
 import com.kusid.butternut.rest.ImageThumbnailerRestApi;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -74,12 +75,12 @@ public class ImageThumbnailerApp {
                     Stream<FullHttpRequest> channelConsumer = ch.in();
 
                     // serve image thumbnail to browser
-                    channelConsumer.filter((FullHttpRequest httpRequest) -> ImageThumbnailerRestApi.IMG_THUMBNAIL_URI.equals(httpRequest.getUri()))
+                    channelConsumer.filter((FullHttpRequest httpRequest) -> CommonConstants.IMG_THUMBNAIL_URI.equals(httpRequest.getUri()))
                             .when(Throwable.class, ImageThumbnailerRestApi.errorHandler(ch))
                             .consume(ImageThumbnailerRestApi.serveThumbnailImage(ch, thumbnail));
 
                     // take uploaded data and thumbnail it
-                    channelConsumer.filter((FullHttpRequest httpRequest) -> ImageThumbnailerRestApi.THUMBNAIL_REQ_URI.equals(httpRequest.getUri()))
+                    channelConsumer.filter((FullHttpRequest httpRequest) -> CommonConstants.THUMBNAIL_REQ_URI.equals(httpRequest.getUri()))
                             .when(Throwable.class, ImageThumbnailerRestApi.errorHandler(ch))
                             .consume(ImageThumbnailerRestApi.thumbnailImage(ch, thumbnail, reactor));
 

@@ -1,6 +1,5 @@
 package com.kusid.butternut.rest;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.*;
 import reactor.core.Reactor;
 import reactor.event.Event;
@@ -8,14 +7,8 @@ import reactor.function.Consumer;
 import reactor.net.NetChannel;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static io.netty.handler.codec.http.HttpHeaders.Names.*;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * Contains the necessary Consumers for handling HTTP requests.
