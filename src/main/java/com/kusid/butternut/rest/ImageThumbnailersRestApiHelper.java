@@ -32,7 +32,7 @@ public final class ImageThumbnailersRestApiHelper {
      * @return Singleton instance of itself.
      */
     public static ImageThumbnailersRestApiHelper getInstance() {
-        if (null != restApiHelper) {
+        if (null == restApiHelper) {
             restApiHelper = new ImageThumbnailersRestApiHelper();
         }
         return restApiHelper;
